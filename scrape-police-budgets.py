@@ -2,7 +2,7 @@
 from lxml import html
 import requests
 import pandas as pd
-import multiprocessing as mp
+import threading
 
 OUTPUT_CSV = 'data/city-budgets.csv'
 CITY_DATA_URL = 'http://www.city-data.com'
@@ -45,37 +45,34 @@ def get_city_name(tree):
     return name[:name.find(",")]
 
 def generate_rows(state_url):
+    global df
+    print("Generate rows")
     state_tree = get_tree(state_url)
     state_name = get_state_name(state_tree)
     city_urls = get_city_urls(state_tree)
-    rows = []
-    for url in city_urls:
+    for url in city_urls[:1]:
         print('[*] City task: fetching %s' % url)
         city_tree = get_tree(url)
         city_name = get_city_name(city_tree)
         row = get_budgets(city_tree)
         cols = [state_name, city_name] + list(row.values())[1:]
-        rows.append(cols)
-    return rows
+        if len(cols) == 7:
+            df.loc[len(df)] = cols
+    pool.release()
+    print("Active threads: %s" % threading.active_count())
 
 
-pool = mp.Pool()
-
-def callback(rows):
-    print("Processing")
-    for row in rows:
-        if len(row) == 7:
-            df.loc[len(df)] = row
+pool = threading.BoundedSemaphore(2)
         
-for url in state_urls:
+for url in state_urls[:1]:
     print('[*] State task: fetching %s' % url)
+    pool.acquire(blocking=True)
+    thread = threading.Thread(target=generate_rows, args=(url, ))
+    thread.start()
     # DEV
     # rows = generate_rows(url)
     # callback(rows)
-    pool.apply_async(generate_rows, args=[url], callback=callback)
 
-pool.close()
-pool.join()
 
 print("Finished")
 df.to_csv(OUTPUT_CSV)
