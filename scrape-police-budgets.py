@@ -71,9 +71,6 @@ for url in state_urls:
     thread = threading.Thread(target=generate_rows, args=(url, results, ))
     thread.start()
     threads.append(thread)
-    # DEV
-    # rows = generate_rows(url)
-    # callback(rows)
 
 for thread in threads:
     thread.join()
