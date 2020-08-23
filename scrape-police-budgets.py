@@ -44,34 +44,43 @@ def get_city_name(tree):
     name = tree.xpath('//*[@id="content"]//h1[@class="city"]//span/text()')[0]
     return name[:name.find(",")]
 
-def generate_rows(state_url):
-    global df
+def generate_rows(state_url, results):
     print("Generate rows")
     state_tree = get_tree(state_url)
     state_name = get_state_name(state_tree)
     city_urls = get_city_urls(state_tree)
-    for url in city_urls[:1]:
+    for url in city_urls:
         print('[*] City task: fetching %s' % url)
         city_tree = get_tree(url)
         city_name = get_city_name(city_tree)
         row = get_budgets(city_tree)
-        cols = [state_name, city_name] + list(row.values())[1:]
-        if len(cols) == 7:
-            df.loc[len(df)] = cols
+        data = [state_name, city_name] + list(row.values())[1:]
+        if len(data) == 7:
+            results.append(data)
     pool.release()
     print("Active threads: %s" % threading.active_count())
 
 
 pool = threading.BoundedSemaphore(2)
-        
-for url in state_urls[:1]:
+results = []
+threads = []
+
+for url in state_urls:
     print('[*] State task: fetching %s' % url)
     pool.acquire(blocking=True)
-    thread = threading.Thread(target=generate_rows, args=(url, ))
+    thread = threading.Thread(target=generate_rows, args=(url, results, ))
     thread.start()
+    threads.append(thread)
     # DEV
     # rows = generate_rows(url)
     # callback(rows)
+
+for thread in threads:
+    thread.join()
+
+print(results)
+for row in results:
+    df.loc[len(df)] = row
 
 
 print("Finished")
