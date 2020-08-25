@@ -82,15 +82,23 @@ model.compile(
     optimizer='adam', 
     metrics=tf.metrics.BinaryAccuracy(threshold=0.0))
 
-history = model.fit(
-    train_ds,
-    validation_data=val_ds,
-    epochs=10)
+checkpoint_path = "training_1/cp.ckpt"
 
-loss, accuracy = model.evaluate(test_ds)
+cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,
+                                                 save_weights_only=True,
+                                                 verbose=1)
 
-print("Loss: ", loss)
-print("Accuracy: ", accuracy)
+# history = model.fit(
+#    train_ds,
+#    validation_data=val_ds,
+#    epochs=10,
+#    callbacks=[cp_callback])
+
+# model.load_weights(checkpoint_path)
+# loss, accuracy = model.evaluate(test_ds)
+
+# print("Loss: ", loss)
+# print("Accuracy: ", accuracy)
 
 # history_dict = history.history
 # history_dict.keys()
@@ -132,12 +140,15 @@ export_model.compile(
     loss=tf.keras.losses.BinaryCrossentropy(from_logits=False), optimizer="adam", metrics=['accuracy']
 )
 
+history = export_model.fit(
+  raw_train_ds,
+  validation_data=raw_val_ds,
+  epochs=10,
+  callbacks=[cp_callback])
+
+
 # Test it with `raw_test_ds`, which yields raw strings
 loss, accuracy = export_model.evaluate(raw_test_ds)
 print(accuracy)
 
-def abc(text):
-    text = tf.expand_dims(text, -1)
-    return vectorize_layer(text)
-print(model.predict(abc("Great documentary about the lives of NY firefighters during the worst terrorist attack of all time.. That reason alone is why this should be a must see collectors item.. What shocked me was not only the attacks, but the\"High Fat Diet\" and physical appearance of some of these firefighters. I think a lot of Doctors would agree with me that,in the physical shape they were in, some of these firefighters would NOT of made it to the 79th floor carrying over 60 lbs of gear. Having said that i now have a greater respect for firefighters and i realize becoming a firefighter is a life altering job. The French have a history of making great documentary\'s and that is what this is, a Great Documentary")))
-
+# export_model.save('saved_model/my_model') 
