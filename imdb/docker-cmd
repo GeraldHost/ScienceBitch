@@ -1,0 +1,3 @@
+docker run -p 8501:8501 \
+  --mount type=bind,source=/Users/rico/Workspace/science-bitch/imdb/saved_model/my_model/,target=/models/my_model \
+  -e MODEL_NAME=my_model -t tensorflow/serving
