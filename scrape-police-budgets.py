@@ -33,8 +33,9 @@ def get_budgets(tree):
     table_headings = tree.xpath('//*[@id="government-employment"]//thead//th/text()')
     values = tree.xpath('//*[@id="government-employment"]//tfoot//td/text()')
     row = {}
-    for index, heading in enumerate(table_headings):
-        row[heading] = values[index]
+    if len(values) > 0: 
+        for index, heading in enumerate(table_headings):
+            row[heading] = values[index]
     return row
 
 def get_state_name(tree):
@@ -61,7 +62,7 @@ def generate_rows(state_url, results):
     print("Active threads: %s" % threading.active_count())
 
 
-pool = threading.BoundedSemaphore(2)
+pool = threading.BoundedSemaphore(1)
 results = []
 threads = []
 
