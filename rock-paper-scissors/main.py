@@ -37,7 +37,9 @@ def load_data():
     return train_ds, val_ds
 
 def build_model():
-    N_mobile = tf.keras.applications.NASNetMobile(input_shape=(img_width, img_height, 3), include_top=False, weights='imagenet')
+    N_mobile = tf.keras.applications.NASNetMobile(
+            input_shape=(img_width, img_height, 3), 
+            include_top=False, weights='imagenet')
     N_mobile.trainable = False
     x = N_mobile.output
     x = tf.keras.layers.GlobalAveragePooling2D()(x)
@@ -60,8 +62,7 @@ if __name__ == "__main__":
       train_ds,
       validation_data=val_ds,
       batch_size=batch_size,
-      epochs=epochs
-    )
+      epochs=epochs)
 
     model.save("model.h5")
 

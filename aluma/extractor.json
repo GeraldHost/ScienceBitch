@@ -1,0 +1,20 @@
+{
+  "modules": [
+    {
+      "id": "aluma.date",
+      "arguments": {
+        "locale": "en-GB"
+      }
+    },
+    {
+      "id": "aluma.reference_number",
+      "arguments": {
+        "format": "[0-9]+",
+        "keywords": "Company No.,Company Number"
+      }
+    },
+    {
+      "id": "aluma.name"
+    }
+  ]
+}
